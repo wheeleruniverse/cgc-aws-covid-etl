@@ -48,4 +48,4 @@ if __name__ == "__main__":
     # LOAD
 
     # load CovidStat instances into the CovidStats DynamoDB table
-    load.load_all("CovidStats", covid_stats, classes.CovidStat)
+    load.load_all(classes.CovidStat, covid_stats)

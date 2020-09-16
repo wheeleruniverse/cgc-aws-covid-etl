@@ -6,6 +6,8 @@ from marshmallow_dataclass import dataclass
 class CovidStat:
     """class to store a COVID-19 Statistic"""
 
+    table_name = "CovidStats"
+
     idx: int
     cases: int
     date: datetime.datetime

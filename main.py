@@ -1,10 +1,24 @@
 
+# internal modules
 import classes
 import extract
 import load
 import transform
 
-if __name__ == "__main__":
+# external modules
+import boto3
+
+
+def main(event, context):
+    """
+    entry point for Lambda function
+    :param event: the Lambda event
+    :param context: the Lambda context
+    :return: None
+    """
+
+    print(f"'event': {event}")
+    print(f"'context': {context}")
 
     # -----------------------------------------------------
     # EXTRACT
@@ -49,3 +63,10 @@ if __name__ == "__main__":
 
     # load CovidStat instances into the CovidStats DynamoDB table
     load.load_all(classes.CovidStat, covid_stats)
+
+
+# Local Only
+if __name__ == "__main__":
+    main(None, None)
+    boto3.setup_default_session(profile_name="wheelers-websites")
+

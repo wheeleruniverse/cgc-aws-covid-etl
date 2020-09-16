@@ -3,6 +3,7 @@ import boto3
 from boto3.dynamodb.types import TypeSerializer
 from botocore.exceptions import ClientError
 
+
 # initialization
 dynamodb_client = boto3.client('dynamodb')
 serializer = TypeSerializer()
@@ -36,7 +37,7 @@ def load_one(dataclass, record):
         raise ValueError(f"ERROR: Provided 'dataclass': {dataclass} must have a field named 'table_name'")
 
     item = {k: serializer.serialize(v) for k, v in dataclass.Schema().dump(record).items() if v != ""}
-    print(f"INFO: Loading DynamoDB\n\tTable: {dataclass.table_name}\n\tItem: {item}")
+    print(f"INFO: Loading[Table: {dataclass.table_name}, Item: {item}]")
     try:
         return dynamodb_client.put_item(TableName=dataclass.table_name, Item=item)
 

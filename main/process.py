@@ -97,10 +97,6 @@ def transform(ny_df, jh_df):
         print(r.to_string())
 
 
-class Deaths(object):
-    pass
-
-
 if __name__ == "__main__":
 
     # define sources

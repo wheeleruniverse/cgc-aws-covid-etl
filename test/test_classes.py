@@ -8,17 +8,20 @@ import unittest
 
 
 class TestClasses(unittest.TestCase):
+    """class containing unit tests for classes.py"""
 
     def test_CovidStatTableName(self):
         """
         :return: pass or fail if the CovidStat table name matches the expectation
         """
+        print("test_CovidStatTableName")
         self.assertEqual(classes.CovidStat.table_name, "CovidStats")
 
     def test_CovidStatConstructor(self):
         """
         :return: pass or fail if the constructor is working as expected
         """
+        print("test_CovidStatConstructor")
         instance = classes.CovidStat(1)
         self.assertIsNotNone(instance)
         self.assertIsInstance(instance, classes.CovidStat)
@@ -27,6 +30,7 @@ class TestClasses(unittest.TestCase):
         """
         :return: pass or fail if the expected fields can be set and read
         """
+        print("test_CovidStatFields")
         num = 1
         now = datetime.datetime.now()
         obj = classes.CovidStat(num)
@@ -45,6 +49,7 @@ class TestClasses(unittest.TestCase):
         """
         :return: pass or fail if the CovidStat instance prints the to_string returns a properly formatted String
         """
+        print("test_CovidStatToString")
         num = 1
         now = datetime.datetime.now()
         obj = classes.CovidStat(num)
@@ -60,6 +65,7 @@ class TestClasses(unittest.TestCase):
         """
         :return: pass or fail if the constructor is working as expected
         """
+        print("test_DatasetConstructor")
         instance = classes.Dataset("TestDataset")
         self.assertIsNotNone(instance)
         self.assertIsInstance(instance, classes.Dataset)
@@ -68,6 +74,7 @@ class TestClasses(unittest.TestCase):
         """
         :return: pass or fail if the constructor is working as expected
         """
+        print("test_DatasetFields")
         name = "TestDataset"
         df = pandas.DataFrame()
         headers_all = ["Test1", "Test2"]

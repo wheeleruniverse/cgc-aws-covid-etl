@@ -14,8 +14,6 @@ class CovidStat:
     deaths: int
     recovered: int
 
-    field = marshmallow.fields.Email
-
     def __init__(self, idx):
         """
         initializes a CovidStat instance
@@ -48,3 +46,6 @@ class Dataset:
         self.headers_key = None
         self.match_field = None
         self.source_url = None
+
+
+

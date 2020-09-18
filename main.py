@@ -1,12 +1,8 @@
 
-# internal modules
 import classes
 import extract
 import load
 import transform
-
-# external modules
-import boto3
 
 
 def main(event, context):
@@ -55,8 +51,7 @@ def main(event, context):
     covid_stats = transform.transform(ny_dataset, jh_dataset)
 
     # print CovidStats
-    for stat in covid_stats:
-        print(stat.to_string())
+    print(*covid_stats, sep="\n")
 
     # -----------------------------------------------------
     # LOAD
@@ -68,5 +63,3 @@ def main(event, context):
 # Local Only
 if __name__ == "__main__":
     main(None, None)
-    boto3.setup_default_session(profile_name="wheelers-websites")
-

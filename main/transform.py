@@ -5,8 +5,8 @@ import classes
 
 # -------------------------------
 # external modules
-from dateutil.parser import parse
 import pandas as pd
+from dateutil.parser import parse
 
 
 def transform(ds1, ds2):

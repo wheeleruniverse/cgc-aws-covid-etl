@@ -1,8 +1,8 @@
-import datetime
-from marshmallow_dataclass import dataclass
+import marshmallow_dataclass
+import marshmallow
 
 
-@dataclass
+@marshmallow_dataclass.dataclass
 class CovidStat:
     """class to store a COVID-19 Statistic"""
 
@@ -10,9 +10,11 @@ class CovidStat:
 
     idx: int
     cases: int
-    date: datetime.datetime
+    date: marshmallow_dataclass.NewType("date", str, marshmallow.fields.Date)
     deaths: int
     recovered: int
+
+    field = marshmallow.fields.Email
 
     def __init__(self, idx):
         """

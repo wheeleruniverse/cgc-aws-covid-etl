@@ -17,22 +17,25 @@ def transform(ds1, ds2):
     :return: created CovidStat instances
     """
 
+    ds1_df = ds1.df if ds1 is not None else None
+    ds2_df = ds2.df if ds2 is not None else None
+    tar_df = ds1_df
+
     # merge dataframes
-    if ds1.df is None:
+    if ds1_df is None:
         raise ValueError("'ds1.df' could not be extracted")
 
-    if ds2.df is None:
+    if ds2_df is None:
         print("WARN: 'ds2.df' could not be extracted")
-        target_df = ds1.df
 
-    else:
-        target_df = pd.merge(ds1.df, ds2.df, left_on=ds1.match_field, right_on=ds2.match_field)
+    elif ds1.match_field is not None and ds2.match_field is not None:
+        tar_df = pd.merge(ds1_df, ds2_df, left_on=ds1.match_field, right_on=ds2.match_field)
 
-    print(f"'target_df':\n{target_df}")
+    print(f"'tar_df':\n{tar_df}")
 
     # convert dataframe to CovidStat instances
     stats = list()
-    for i, r in target_df.iterrows():
+    for i, r in tar_df.iterrows():
         cs = classes.CovidStat(i)
         cs.cases = r["cases"] if "cases" in r else None
         cs.deaths = r["deaths"] if "deaths" in r else None
@@ -42,7 +45,7 @@ def transform(ds1, ds2):
             cs.date = parse_date(r["date"]) if "date" in r else None
 
         except TypeError:
-            print(f"WARN: could not parse 'date' for row #{i} of 'target_df'\n\t'date': {r['date']}")
+            print(f"WARN: could not parse 'date' for row #{i} of 'tar_df'\n\t'date': {r['date']}")
             continue
 
         stats.append(cs)

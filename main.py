@@ -58,6 +58,7 @@ def main(event, context):
 
     # load CovidStat instances into the CovidStats DynamoDB table
     load.load_all(classes.CovidStat, covid_stats)
+    load.load_json(covid_stats)
 
 
 # Local Only

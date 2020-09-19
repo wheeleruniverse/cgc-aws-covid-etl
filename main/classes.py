@@ -21,6 +21,18 @@ class CovidStat:
         """
         self.idx = idx
 
+    def to_json(self):
+        """
+        :return: this CovidStat instance as JSON
+        """
+        return {
+            "idx": self.idx,
+            "date": self.date,
+            "cases": self.cases,
+            "deaths": self.deaths,
+            "recovered": self.recovered
+        }
+
     def to_string(self):
         """
         :return: this CovidStat instance as a String

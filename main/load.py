@@ -1,21 +1,64 @@
 
 import boto3
+import json
+
 from boto3.dynamodb.types import TypeSerializer
 from botocore.exceptions import ClientError
 from os import environ
+from pathlib import Path
 
 # global initialization
 aws_profile = environ.get("AWS_PROFILE")
 print(f"'aws_profile': {aws_profile}")
 
+# s3 initialization
+s3_bucket_name = environ.get("S3_BUCKET_NAME")
+s3_object_path = environ.get("S3_OBJECT_PATH")
+s3_resource = boto3.resource("s3") if s3_bucket_name else None
+s3_meta_client = s3_resource.meta.client if s3_resource else None
+print(f"'s3_bucket_name': {s3_bucket_name}")
+print(f"'s3_object_path': {s3_object_path}")
+
+# sns initialization
 sns_topic_arn = environ.get("SNS_TOPIC_ARN")
+sns_resource = boto3.resource('sns') if sns_topic_arn else None
+sns_topic = sns_resource.Topic(sns_topic_arn) if sns_resource else None
 print(f"'sns_topic_arn': {sns_topic_arn}")
 
+# dynamodb initialization
 dynamodb_client = boto3.client("dynamodb")
 serializer = TypeSerializer()
 
-sns_resource = boto3.resource('sns') if sns_topic_arn else None
-sns_topic = sns_resource.Topic(sns_topic_arn) if sns_resource else None
+
+def load_json(records):
+    """
+    converts the records provided into json and writes them to S3
+    :param records: the records to write to S3
+    :return: None
+    """
+
+    if not s3_meta_client:
+        print("WARN: S3 Bucket not initialized!")
+        print("WARN: Ensure 'S3_BUCKET_NAME' is set as an Environment Variable")
+        return
+
+    # convert records to json
+    json_rec = [i.to_json() for i in records]
+    json_bin = json.dumps(json_rec, default=str, indent=4, sort_keys=True)
+
+    # write json to a file
+    src_file = f"{Path.cwd()}/main/resources/CovidStats.json"
+    dst_path = f"{s3_object_path}/" if s3_object_path else ""
+    dst_file = f"{dst_path}CovidStats.json"
+
+    with open(src_file, "w") as f:
+        f.write(json_bin)
+
+    try:
+        s3_meta_client.upload_file(src_file, s3_bucket_name, dst_file)
+
+    except ClientError as e:
+        print(f"ERROR: {str(e)}")
 
 
 def load_all(dataclass, records):

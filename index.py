@@ -5,7 +5,7 @@ import load
 import transform
 
 
-def main(event, context):
+def handler(event, context):
     """
     entry point for Lambda function
     :param event: the Lambda event
@@ -63,4 +63,4 @@ def main(event, context):
 
 # Local Only
 if __name__ == "__main__":
-    main(None, None)
+    handler(None, None)

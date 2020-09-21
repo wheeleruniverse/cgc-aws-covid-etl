@@ -1,0 +1,224 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  Creates an Automated ETL Service to Update Covid Statistics
+
+Parameters:
+  pEmail:
+    Description: Email to Notify
+    Type: String
+
+  pLambdaCodeBucket:
+    Description: S3 Bucket holding Lambda Code
+    Type: String
+
+  pLambdaCodeObject:
+    Description: S3 Object holding Lambda Code
+    Type: String
+
+Resources:
+  rBucketForChallenge:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: "wheeler-code-guru-challenge-09-20"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Name
+          Value: "wheeler-code-guru-challenge-09-20"
+        - Key: Project
+          Value: "CodeGuruChallenge"
+
+  rDynamoTableForCovidStats:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: date
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: date
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: CovidStats
+      Tags:
+        - Key: Name
+          Value: CovidStats
+        - Key: Project
+          Value: "CodeGuruChallenge"
+
+  rDynamoTableForCovidStatsTest:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: date
+          AttributeType: S
+      BillingMode: PROVISIONED
+      KeySchema:
+        - AttributeName: date
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      TableName: CovidStatsTest
+      Tags:
+        - Key: Name
+          Value: CovidStatsTest
+        - Key: Project
+          Value: "CodeGuruChallenge"
+
+  rEventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Rule to Invoke Lambda Everyday"
+      Name: "wheeler-code-guru-challenge-09-20-etl-rule"
+      RoleArn: !GetAtt rRoleForEventBridge.Arn
+      ScheduleExpression: "cron(0 10 * * ? *)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt rLambda.Arn
+          Id: !Ref rLambda
+          RoleArn: !GetAtt rRoleForLambda.Arn
+
+  rLambda:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - rBucketForChallenge
+      - rRoleForLambda
+      - rSnsTopic
+    Properties:
+      Code:
+        S3Bucket: !Ref pLambdaCodeBucket
+        S3Key: !Ref pLambdaCodeObject
+      Description: "Lambda to Execute ETL Job"
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !Ref rBucketForChallenge
+          S3_OBJECT_PATH: "Data"
+          SNS_TOPIC_ARN: !Ref rSnsTopic
+      FunctionName: "code-guru-challenge-09-20-etl"
+      Handler: index.handler
+      MemorySize: 128
+      Role: !GetAtt rRoleForLambda.Arn
+      Runtime: python3.8
+      Tags:
+        - Key: Name
+          Value: "code-guru-challenge-09-20-etl"
+        - Key: Project
+          Value: "CodeGuruChallenge"
+      Timeout: 10
+
+  rRoleForEventBridge:
+    Type: AWS::IAM::Role
+    DependsOn:
+      - rLambda
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Description: "Role for EventBridge to Invoke Lambda"
+      Policies:
+        - PolicyName: "code-guru-challenge-09-20-etl-rule-policy"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource:
+                  - !GetAtt rLambda.Arn
+      RoleName: !Sub "${AWS::Region}--code-guru-challenge-09-20-etl-rule-role"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::Region}--code-guru-challenge-09-20-etl-rule-role"
+        - Key: Project
+          Value: "CodeGuruChallenge"
+
+  rRoleForLambda:
+    Type: AWS::IAM::Role
+    DependsOn:
+      - rSnsTopic
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Description: "Role for Lambda to interact with CloudWatch Logs, DynamoDB, S3, and  SNS"
+      Policies:
+        - PolicyName: "code-guru-challenge-09-20-etl-policy"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:PutItem"
+                Resource:
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/CovidStats"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/CovidStatsTest"
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                Resource:
+                  - !Sub "arn:aws:s3:::${rBucketForChallenge}/*"
+              - Effect: Allow
+                Action:
+                  - "sns:Publish"
+                Resource:
+                  - !Ref rSnsTopic
+      RoleName: !Sub "${AWS::Region}--code-guru-challenge-09-20-etl-role"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::Region}--code-guru-challenge-09-20-etl-role"
+        - Key: Project
+          Value: "CodeGuruChallenge"
+
+  rSnsSubscription:
+    Type: AWS::SNS::Subscription
+    DependsOn:
+      - rSnsTopic
+    Properties:
+      Endpoint: !Ref pEmail
+      Protocol: email
+      TopicArn: !Ref rSnsTopic
+
+  rSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: "code-guru-challenge-09-20-topic"
+      Tags:
+        - Key: Name
+          Value: "code-guru-challenge-09-20-topic"
+        - Key: Project
+          Value: "CodeGuruChallenge"
+      TopicName: "code-guru-challenge-09-20-topic"
+
+

@@ -1,2 +1,3 @@
-# CloudGuruChallenge_0920
-#CloudGuruChallenge on Event-Driven Python on AWS in September 2020
+# cgc-aws-covid-etl
+
+https://acloudguru.com/blog/engineering/cloudguruchallenge-python-aws-etl

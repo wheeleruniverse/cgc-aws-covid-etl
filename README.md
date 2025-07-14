@@ -6,7 +6,7 @@ A serverless, event-driven ETL pipeline for processing COVID-19 data from the Ne
 
 This project was built for the September 2020 [#CloudGuruChallenge](https://www.pluralsight.com/resources/blog/cloud/cloudguruchallenge-python-aws-etl) on Event-Driven Python on AWS.
 
-**Blog Post**: [My September Cloud Guru Challenge Experience](https://dev.to/wheeleruniverse/my-september-cloud-guru-challenge-experience-l2j)
+**Blog Post**: [AWS COVID ETL](https://wheeleruniverse.netlify.app/aws-covid-etl)
 
 ## 📋 Overview
 
